@@ -10,6 +10,7 @@ st.markdown(
     
 <div style="text-align: center;">
     <h3>Isaac Levy</h3>
+    <p>DS7400 - Deep Learning, Fall 2026</p>
 </div>
     """,
     unsafe_allow_html=True
