@@ -47,9 +47,14 @@ st.title("Data Viewer")
 st.markdown(
     """
     <div style="text-align: left;">
-        Select channels you want to view and the time window from the dropdown and slider on the left.
-        Raw SEEG signals are in microvolts. They have been downsampled from 500 Hz to 128 Hz, clipped to 
-        30 seconds, and average referencing has been applied.
+       <p>Select which patient and channels you want to view and the time window from the dropdown and slider on the left.
+        Raw SEEG signals are in microvolts. They have been downsampled from 500 Hz to 128 Hz, clipped to the first
+        30 seconds of the recording (to make viewing more manageable), and average referencing has been applied.</p>
+        <p>If you would like to create a new annotation, identify the time, the channel (if applicable),
+        and the annotation type. Enter the information in the box below the plots, hit "Enter" or 
+        click "Save annotation" to save it. All existing annotations will appear as orange boxes on the relevant
+        channels, and are shown in a list at the bottom of the page. You can delete annotations by 
+        clicking "Delete" to the right of the one you want to remove. Annotations are saved in a file for each patient.
     </div>
     """,
     unsafe_allow_html=True
