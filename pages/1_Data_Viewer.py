@@ -5,6 +5,7 @@ import mne
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import streamlit as st
+from utils.annotations import add_annotation, delete_annotation, load_annotations
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "example_data"
 
@@ -95,18 +96,72 @@ data, times = raw.get_data(
     picks=selected, start=start, stop=stop, return_times=True, units="uV"
 )
 
+# PLOTTING
+LABELS = ["artifact", "spike", "noisy", "other"]
+
+annotations = load_annotations(edf_path)
+
 n = len(selected)
 fig = make_subplots(rows=n, cols=1, shared_xaxes=True, vertical_spacing=0.2 / n)
 
 for i, name in enumerate(selected, start=1):
-    fig.add_trace(
-        go.Scattergl(x=times, y=data[i-1], mode="lines", name=name),
-        row=i, col=1
-    )
+    fig.add_trace(go.Scattergl(x=times, y=data[i-1], mode="lines", name=name), row=i, col=1)
     fig.update_yaxes(title_text=name, row=i, col=1)
 
+# Shade each saved annotation
+for row in annotations.itertuples():
+    if row.channel == "":
+        target_row = "all"
+    elif row.channel in selected:
+        target_row = selected.index(row.channel) + 1
+    else:
+        continue
+    fig.add_vrect(
+        x0=row.onset,
+        x1=row.onset + row.duration,
+        fillcolor="orange",
+        opacity=0.25,
+        line_width=0,
+        row=target_row,
+        col=1,
+    )
+
+fig.update_xaxes(range=list(t_range))
 fig.update_xaxes(title_text="Time (s)", row=n, col=1)
-fig.update_layout(height=150 * n + 80, showlegend=False,
-                  margin=dict(l=60, r=20, t=20, b=40))
+fig.update_layout(height=150 * n + 80, showlegend=False, margin=dict(l=60, r=20, t=20, b=40))
 
 st.plotly_chart(fig, width="stretch")
+
+# ANNOTATIONS
+st.subheader("Annotations")
+
+# Form to add new annotation
+with st.form("add_annotation"):
+    c1, c2, c3, c4 = st.columns(4)
+    start_t = c1.number_input("Start (s)", 0.0, duration, value=float(t_range[0]), step=0.5)
+    end_t = c2.number_input("End (s)", 0.0, duration, value=min(float(t_range[0]) + 1.0, duration), step=0.5)
+    channel_choice = c3.selectbox("Channel", ["All channels"] + selected)
+    label = c4.selectbox("Label", LABELS)
+    note = st.text_input("Note (optional)")
+    submitted = st.form_submit_button("Save annotation")
+
+if submitted:
+    if end_t <= start_t:
+        st.error("End time must be after start time.")
+    else:
+        channel = "" if channel_choice == "All channels" else channel_choice
+        add_annotation(edf_path, start_t, end_t - start_t, channel, label, note)
+        st.rerun()
+
+# List existing annotations with a delete button
+if annotations.empty:
+    st.caption("No annotations for this recording yet.")
+for i, row in annotations.iterrows():
+    text_col, button_col = st.columns([6, 1])
+    text_col.write(
+        f"**{row['label']}** · {row['onset']:.1f}-{row['onset'] + row['duration']:.1f} s"
+        + (f"· {row['note']}" if row["note"] else "")
+    )
+    if button_col.button("Delete", key=f"delete_{i}"):
+        delete_annotation(edf_path, i)
+        st.rerun()
