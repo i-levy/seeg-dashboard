@@ -25,7 +25,7 @@ st.markdown(
             This project explores fingerprinting (i.e., identifying unique signatures) of contacts from 
             stereo-electroencephalography (SEEG) electrodes. These electrodes were implanted in the brains of patients
             with drug resistant epilepsy and interictal, i.e., resting-state time periods, are used here.
-            The goal is to use deep learning in various ways to identify specific electrode contacts.
+            The goal is to use deep learning to identify specific electrode contacts.
             The data come from the <a href="https://doi.org/10.18112/openneuro.ds004100.v1.1.3">HUP iEEG Epilepsy Dataset</a>.
         </p>
         <p>To navigate this site, please click on the desired page in the left sidebar.</p>
