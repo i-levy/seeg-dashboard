@@ -8,7 +8,7 @@ This project was built using `streamlit` and relies on `mne`, `plotly`, and `pan
 
 Currenly implemented features:
 1. 3 example patients, each with one ~5 minute interictal recording (only the first 30 seconds are used in the viewer for now).
-2. An interactive data viewer where the user can select which patient and which electrode(s) time series to view. Users can zoom and adjust the viewing window.
+2. An interactive data viewer where the user can select which patient and which electrode channel(s) to view. Users can zoom and adjust the viewing window and select multiple channels at once.
 3. The ability to add and view annotations. Annotations are created using a form, where the user can select which contact/channel the annotation applies to (one or all), the time window, and the type of annotation (artifact, spike, noisy, other), as well as write an optional descriptive note about the annotation. After an annotation is created, it is saved in a CSV file and rendered on the viewer as an orange box. Annotations can also be removed by the user. A handful of example annotations for one subject are pre-loaded.
 
 ## Running the application locally
