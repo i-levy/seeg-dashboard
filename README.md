@@ -2,7 +2,7 @@
 Isaac Levy, DS7400-Deep Learning, Fall 2026
 
 ## Overview
-This project explores fingerprinting (i.e., identifying unique signatures) of contacts from stereo-electroencephalography (SEEG) electrodes. These electrodes were implanted in the brains of patients with drug resistant epilepsy and interictal, i.e., resting-state time periods, are used here. The goal is to use deep learning to identify specific electrode contacts. The data come from the [HUP iEEG Epilepsy Dataset](https://doi.org/10.18112/openneuro.ds004100.v1.1.3) (see the data README for a full citation).
+This project explores fingerprinting (i.e., identifying unique signatures) of contacts from stereo-electroencephalography (SEEG) electrodes. These electrodes were implanted in the brains of patients with drug resistant epilepsy and interictal, i.e., resting-state time periods, are used here. The goal is to use deep learning to identify specific electrode contacts. The data come from the [HUP iEEG Epilepsy Dataset](https://doi.org/10.18112/openneuro.ds004100.v1.1.3) (see `/example_data/README` for a full citation).
 
 This project was built using `streamlit` and relies on `mne`, `plotly`, and `pandas` for data processing and visualization. 
 
