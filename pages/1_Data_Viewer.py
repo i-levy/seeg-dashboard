@@ -47,9 +47,8 @@ st.markdown(
     """
     <div style="text-align: left;">
         Select channels you want to view and the time window from the dropdown and slider on the left.
-        Raw SEEG signals are in microvolts and have been converted to volts for easier visualization. 
-        They have also been downsampled from 500 Hz to 128 Hz, clipped to 30 seconds, and 
-        average referencing has been applied.
+        Raw SEEG signals are in microvolts. They have been downsampled from 500 Hz to 128 Hz, clipped to 
+        30 seconds, and average referencing has been applied.
     </div>
     """,
     unsafe_allow_html=True
