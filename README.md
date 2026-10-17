@@ -4,7 +4,7 @@ Isaac Levy, DS7400-Deep Learning, Fall 2026
 ## Overview
 This project explores fingerprinting (i.e., identifying unique signatures) of contacts from stereo-electroencephalography (SEEG) electrodes. These electrodes were implanted in the brains of patients with drug resistant epilepsy and interictal, i.e., resting-state time periods, are used here. The goal is to use deep learning to identify specific electrode contacts. The data come from the [HUP iEEG Epilepsy Dataset](https://doi.org/10.18112/openneuro.ds004100.v1.1.3) (see `/example_data/README` for a full citation).
 
-This project was built using `streamlit` and relies on `mne`, `plotly`, and `pandas` for data processing and visualization. 
+This project was built using `streamlit` and relies on `mne`, `plotly`, and `pandas` for data processing and visualization. It requires `pytorch` for the deep learning component.
 
 Currenly implemented features:
 1. 3 example patients, each with one ~5 minute interictal recording (only the first 30 seconds are used in the viewer for now).
@@ -24,3 +24,6 @@ conda env create -f environment.yml
 conda activate dashboard
 streamlit run Home_Page.py
 ```
+
+## Other notes
+* The reference was not documented, and there is no evidence for common average referencing (CAR) or bipolar reference, so I am treating the data as native-referenced and not applying further referencing.

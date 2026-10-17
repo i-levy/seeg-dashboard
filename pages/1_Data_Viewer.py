@@ -21,9 +21,15 @@ def channels_path_for(edf_path):
 
 @st.cache_resource
 def load_raw(edf_path, good_channels, target_sample_rate=128, max_duration_seconds=30):
-    raw = mne.io.read_raw_edf(edf_path, preload=False, verbose="ERROR")
+    raw = mne.io.read_raw_edf(edf_path, preload=True, verbose="ERROR")
     # Only pick channels with good status
     raw.pick(good_channels)
+    # Low-pass filter
+    raw.filter(l_freq=1.0, h_freq=None, verbose=False)
+    # Notch filter
+    nyq = raw.info['sfreq'] / 2
+    notch = [f for f in (60, 120, 180, 240) if f < nyq - 2]
+    raw.notch_filter(notch, verbose=False)
     # Crop length to 30 seconds
     raw.crop(tmax=min(max_duration_seconds, raw.times[-1]))
     # Resample to lower resolution
