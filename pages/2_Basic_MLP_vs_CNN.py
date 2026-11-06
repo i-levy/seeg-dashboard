@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 #sys.path.insert(0, str(ROOT))                       
 from utils.seeg_fingerprint import load_model             
 
-RESULTS_DIR = ROOT / 'results'
+RESULTS_DIR = ROOT / 'results_hw2'
 MODEL_ORDER = ['MLP', 'Net1D', 'CNN']
 
 #st.set_page_config(page_title='SEEG fingerprinting', layout='wide')
