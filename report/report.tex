@@ -43,8 +43,8 @@ the second recording was only used for testing. To create more training samples,
 moved 0.1 seconds (26 data points at 256 Hz) forwards to generate overlapping windows, 
 increasing the training size from 180 to 1,700+ sammples.
 Additionally, global normalization was applied:
-the mean and standard deviation was computed over every 1-second window and conctact in the training set, and
-the training data, validation data, test data, and run2 test data were z-scored using these values.
+the mean and standard deviation was computed over every 1-second window and contact in the training set, then
+the training data, validation data, test data, and run2 data were z-scored using these values.
 This rescales every window while preserving amplitude differences between contacts and only uses information computed
 from the training set.
 
@@ -67,6 +67,14 @@ feature extractor to fingeprint individuals.
 
 \section{Proposed Model}
 \subsection{Data Representation}
+In my first iteration, I trained models on the raw time series, which was feasible even without using RNNs or LSTMs since the time windows were short. Inspired by CITE LILY, and CITE WANG AND OATES, I wanted to convert the time series into image representations.
+I did this in two ways: (1) a two-channel time $\times$ time image where the first channel is the Gramian Angular
+Summation Field of the window (rescaled to [-1, 1]), and the second channel is the Markov Transition
+Field computed with 8 quantile bins. Both are reduced to 64 $\times$ 64. Pixed (i, j) relates time steps i and j;
+(2) a three-channel amplitude $\times$ amplitude image with one channel per lag (2, 8, and 32 samples, about 8, 31, and 125 ms).
+Each 16 $\times$ 16 channel is a histogram of (x(t - lag), x(t)) pairs within the window, using 16 equal-width amplitude
+bins spanning $\pm$4 standard deviations. Cell values are log-scaled counts, $\frac{log(1 + count)}{log(1 + 256)}$.
+
 \subsection{Model Architecture}
 \subsection{Hypotheses}
 
