@@ -56,7 +56,7 @@ I created two baseline models for this fingerprinting task:
     \item A 1D-CNN with a transformer encoder (code sourced from CITE)
 \end{enumerate}
 
-PUT IN DIAGRAM OF CNN
+See the Appendix for an architecture diagram of the 1D-CNN.
 
 Both models were designed to directly use the 1-second long snippets of the interictal recordings.
 This data representation was originally inspired by CITE LILY, which used accelerometry data from a wrist sensor and a lag-based
@@ -80,6 +80,33 @@ bins spanning $\pm$4 standard deviations. Cell values are log-scaled counts, $\f
 
 \section{Results}
 
+\section{Appendix}
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/hw2_cnn.png}
+    \caption{Model architecture of the 1D-CNN}
+    \label{fig:1d_cnn}
+\end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/hw3_TwoBranch.png}
+    \caption{Model architecture of the TwoBranch model.}
+    \label{fig:twobranch}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/hw3_TSOnly.png}
+    \caption{Model architecture of the TSOnly model.}
+    \label{fig:tsonly}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/hw3_GridOnly.png}
+    \caption{Model architecture of the GridOnly model.}
+    \label{fig:gridonly}
+\end{figure}
 
 \end{document}
