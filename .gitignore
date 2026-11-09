@@ -11,6 +11,7 @@ utils/testing.Rmd
 utils/testing.ipynb
 utils/accelPrint_plot_grid_cells.py
 utils/setup.ipynb
+results_hw3/2_sec_results/
 
 *.aux
 *.log
