@@ -11,3 +11,6 @@ dependencies:
   - streamlit
   - torch
   - torchvision
+  - torchview
+  - pyts
+  - ipykernel

@@ -2,12 +2,15 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{amsmath,amssymb}
 \usepackage{hyperref}
 \usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
 \usepackage{listings}
 \usepackage{float}
 \usepackage{caption}
+\usepackage[section]{placeins}
 
 \title{Assignment 3 Report}
 \author{
@@ -28,25 +31,25 @@ At this time, I am restricting my analyses to interictal recordings for three re
 \subsection{Data Processing}
 Preprocessing included various filtering and resampling steps. First a 1 Hz high-pass filter was applied to remove slow drift and the DC offset that each electrode has, which is intrinsic to the electrode itself rather than a biological signal, and is therefore not a desirable feature to learn. Next, a notch filter was applied at 60 Hz (and harmonic frequencies up to the Nyquist frequency) to remove power line noise. Then, recordings were downsampled to 256 Hz from an original 500 Hz or 512 Hz to reduce computational overhead. Finally, global average referencing was applied to all contacts (at the subject level) to remove artifacts.
 
-Since each subject has two recordings of ~5 minutes, the first recording was split into training (180 seconds), validation (55 seconds), and test (55 seconds) sets with 5 second gaps in between the sets, while the second recording was only used for testing. To create more training samples, the 1-second window was moved 0.1 seconds (26 data points at 256 Hz) forwards to generate overlapping windows, increasing the training size from 180 to 1,700+ samples. Additionally, global normalization was applied: the mean and standard deviation was computed over every 1-second window and contact in the training set, then the training data, validation data, test data, and run2 data were z-scored using these values. This rescales every window while preserving amplitude differences between contacts and only uses information computed
+Since each subject has two recordings of ~5 minutes, the first recording was split into training (180 seconds), validation (55 seconds), and test (55 seconds) sets with 5 second gaps in between the sets, while the second recording was only used for testing. To create more training samples, the 1-second window was moved 0.1 seconds (26 data points at 256 Hz) forwards to generate overlapping windows, increasing the training size from 180 to 1,700+ samples. Additionally, global normalization was applied: the mean and standard deviation was computed over every 1-second window and contact in the training set, then the training data, validation data, test data, and Run 2 data were z-scored using these values. This rescales every window while preserving amplitude differences between contacts and only uses information computed
 from the training set.
 
 \section{Baseline Models}
 \subsection{Data Processing}
 I created two baseline models for this fingerprinting task:
 \begin{enumerate}
-    \item A fully-connected MLP with 2 hidden layers
-    \item A 1D-CNN with a transformer encoder (code sourced from CITE). See the Appendix Figure \ref{fig:1d_cnn} for an architecture diagram of the 1D-CNN.
+    \item A fully-connected MLP with 2 hidden layers.
+    \item A 1D-CNN with a transformer encoder \parencite{hong_holmes_2020}. See the Appendix Figure \ref{fig:1d_cnn} for an architecture diagram of the 1D-CNN.
 \end{enumerate}
 
-Both models were designed to directly use the 1-second long snippets of the interictal recordings. This data representation was originally inspired by CITE LILY, which used accelerometer data from a wrist sensor and a lag-based feature extractor to fingerprint individuals from their gait. This work converted the time series into an image, but did not use the image in the model; instead, they converted the image back into a tabular format.
+Both models were designed to directly use the 1-second long snippets of the interictal recordings. This data representation was originally inspired by \cite{koffman_fingerprinting_2023}, which used accelerometer data from a wrist sensor and a lag-based feature extractor to fingerprint individuals from their gait. This work converted the time series into an image, but did not use the image in the model; instead, they converted the image back into a tabular format.
 
 \subsection{Results}
 
 
 \section{Proposed Model}
 \subsection{Data Representation}
-In my first iteration, I trained models on the raw time series, which was feasible even without using RNNs or LSTMs since the time windows were short. Inspired by CITE LILY, and CITE WANG AND OATES, I wanted to convert the time series into image representations.
+In my first iteration, I trained models on the raw time series, which was feasible even without using RNNs or LSTMs since the time windows were short. Inspired by \cite{koffman_fingerprinting_2023}, \cite{wang_encoding_2015}, and \cite{yang_sensor_2019}, I wanted to convert the time series into image representations.
 I did this in two ways: (1) a two-channel time $\times$ time image where the first channel is the Gramian Angular
 Summation Field (GASF) of the window (rescaled to [-1, 1]), and the second channel is the Markov Transition
 Field (MTF) computed with 8 quantile bins. Both are reduced to 64 $\times$ 64. Pixel (i, j) relates time steps i and j;
@@ -56,13 +59,46 @@ Field (MTF) computed with 8 quantile bins. Both are reduced to 64 $\times$ 64. P
 My proposed model starts with two parallel CNNs, one branch for the two-channel GASF and MTF image, and one branch for the three-channel lag grid image. After a convolution and average pooling, the results maps are flattened and then concatenated before being passed to a MLP head with two hidden layers to make the final prediction. Given the parallel CNN branches of this model, it will be referred to as \texttt{TwoBranch}. See Appendix Figure \ref{fig:twobranch} for an architecture diagram.
 
 \subsection{Hypotheses}
-My goal with this pipeline was to explore how using image representations of the time series compared to using the raw time series. I was also interesting in testing different types of image representations, GASF and MTF vs lag grids, both together and separately. I hypothesized that the image representation could provide a richer signature of neural activity that would be more distinguishable between electrode contacts and potentially more stable across time for each contact, thereby making it easier to fingerprint and classify them. Additionally, by combining two different methods of converting the time series to images, I hoped to exploit more information that either representation could carry on its own.
+My goal with this pipeline was to explore how using image representations of the time series compared to using the raw time series. A 1D-CNN may be sufficient for classifying electrodes from 1-second windows, but it may not be capturing as much information and temporal structure as possible, and converting the time series to images could present a way to extract more information. I was also interesting in testing different types of image representations, GASF and MTF vs lag grids, both together and separately. I hypothesized that the image representation could provide a richer signature of neural activity that would be more distinguishable between electrode contacts and potentially more stable across time for each contact, thereby making it easier to fingerprint and classify them. Additionally, by combining two different methods of converting the time series to images, I aimed to exploit more information than either representation could carry on its own. 
+
+This method could fail in a number of ways: the images simply may not carry a more distinguishable signature compared to the raw 1-second time series windows, which could be a limitation of the image representations themselves, or of the length of the time series; the two types of image representations could carry too much overlapping information, making the \texttt{TwoBranch} model's parallel CNN branches redundant. Inevitably, training these models will take longer than training the CNN on the raw 1-second windows, which is not a limitation or failure, per se, but is a consideration.
+
+I was interested in testing longer windows, but this would come at an even more increased computational cost, since it would require larger images, in the case of the GASF and MTF images, or images with more channels, in the for the lag grids. It would also halve the amount of available training data, which is already limited. For these reasons, I decided not to perform this experiment at this time, but I will consider it for the future.
 
 To test these hypotheses, I trained and evaluated the \texttt{TwoBranch} model as well as a model using only the GASF and MTF images, \texttt{TSOnly}, and a model using only the lag grid images, \texttt{GridOnly}. See Appendix Figures \ref{fig:tsonly} and \ref{fig:gridonly}, respectively, for architecture diagrams. They use the same structure as the \texttt{TwoBranch}, but each only uses their own branch plus the MLP head.
 
-Furthermore, since the image representation of the time series does not change as the time series length grows, and therefore the computational overhead does not meaningfully increase, I was interested in using longer time windows to compute the images, so I repeated all the tests using 2-second time windows.
-
 \section{Results}
+\begin{center}
+\captionof{table}{Accuracy for each subject, model, and test set (Run 1 test, Run 2). Bolded values indicate the best performance for each subject and test set. Chance accuracy for each subject is between 1/36 to 1/77, e.g., 1.3-2.8. The mean rows are unweighted means over subjects.}
+\label{tab:results}
+\begin{tabular}{llrrrrr}
+\toprule
+ &  & MLP & CNN & \texttt{TSOnly} & \texttt{GridOnly} & \texttt{TwoBranch} \\
+\midrule
+\multirow[c]{2}{*}{HUP060} & Test & 32.9 & \bfseries 45.2 & 18.3 & 33.3 & 39.7 \\
+ & Run 2 & 30.7 & \bfseries 48.4 & 18.5 & 34.1 & 39.8 \\
+\cline{1-7}
+\multirow[c]{2}{*}{HUP117} & Test & 21.3 & \bfseries 46.1 & 12.2 & 25.2 & 25.5 \\
+ & Run 2 & 21.6 & \bfseries 48.3 & 11.3 & 25.0 & 24.9 \\
+\cline{1-7}
+\multirow[c]{2}{*}{HUP133} & Test & 17.6 & \bfseries 34.6 & 11.8 & 18.7 & 24.6 \\
+ & Run 2 & 16.4 & \bfseries 31.8 & 9.5 & 16.9 & 22.8 \\
+\cline{1-7}
+\multirow[c]{2}{*}{Mean} & Test & 24.0 & \bfseries 41.9 & 14.1 & 25.7 & 29.9 \\
+ & Run 2 & 22.9 & \bfseries 42.8 & 13.1 & 25.3 & 29.1 \\
+\cline{1-7}
+\bottomrule
+\end{tabular}
+\end{center}
+
+Table \ref{tab:results} shows the accuracy results for the main model and the ablation results. Across all subjects and both the Run 1 Test windows and the Run 2 windows, all models do much better than chance. Out of the image models, \texttt{TwoBranch} model has the highest accuracy to all subjects and recordings, except for subject HUP117, where \texttt{GridOnly} is 0.1 percentage points better. In general, the \texttt{GridOnly} model is only slightly worse than the \texttt{TwoBranch}, which indicates that most of the information is coming from the lag grid images, and only some additionally useful information is coming from the GASF/MTF images. However, the original CNN that used the raw 1-second windows greatly outperforms the image-based models, and the original MLP is also only slightly worse than the \texttt{TwoBranch} model.
+
+
+
+Overall, representing the time series as images did not improve predictions compared to feeding the time series directly into a 1D-CNN. Future experiments could include using deeper CNNs when working with images and using longer time windows (for both images and raw time series).
+
+\clearpage
+\printbibliography
 
 \clearpage
 \section{Appendix}
