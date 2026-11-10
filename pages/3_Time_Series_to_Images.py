@@ -18,9 +18,22 @@ WINDOW_DIRS = {'1-second windows': '1_sec_results'}
 # window length used for the cross-subject summary plot
 SUMMARY_DIR = '1_sec_results'
 
+
+EXAMPLES_DIR = RESULTS_ROOT / '1_sec_results'
+EXAMPLE_IMAGES = [   # (file name, title, caption)
+    ('gasf.png', 'GASF',
+     'Time x time. Pixel (i, j) combines the signal at time steps i and j.'),
+    ('mtf.png', 'MTF',
+     'Time x time. Pixel (i, j) is the transition probability between the quantile bins at time steps i and j.'),
+    ('lag_grid.png', 'Lag grid',
+     'Amplitude x amplitude. Counts of (x(t-lag), x(t)) pairs at a fixed lag.'),
+]
+EXAMPLE_CAPTION = 'One 1-second window (256 samples) from one contact, shown in each encoding.'
+
+
 # keys as saved in results.json
 MODEL_ORDER = ['TwoBranch', 'TSOnly', 'GridOnly']
-LABELS = {'TwoBranch': 'Two-branch', 'TSOnly': 'GAF/MTF only', 'GridOnly': 'Lag grids only'}
+LABELS = {'TwoBranch': 'Two-branch', 'TSOnly': 'GASF/MTF only', 'GridOnly': 'Lag grids only'}
 
 # How to find each model's diagram in report/figures: a file whose name contains one of these
 # (case and punctuation ignored). To point at a specific file instead, fill FIG_OVERRIDES,
@@ -165,6 +178,22 @@ if not patients:
     st.error(f'No results found in {RESULTS_ROOT}. Expected '
              f'results_hw3/<1_sec_results|2_sec_results>/<patient>/results.json.')
     st.stop()
+
+# example encodings
+st.header('Example encodings')
+example_cols = st.columns(len(EXAMPLE_IMAGES))
+for col, (fname, title, caption) in zip(example_cols, EXAMPLE_IMAGES):
+    with col:
+        st.subheader(title)
+        img = EXAMPLES_DIR / fname
+        if img.exists():
+            st.image(str(img))
+            st.caption(caption)
+        else:
+            st.info(f'{fname} not found in {EXAMPLES_DIR}.')
+st.caption(EXAMPLE_CAPTION)
+st.divider()
+
 
 # summary across subjects
 st.header('Accuracy across subjects')

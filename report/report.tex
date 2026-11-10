@@ -42,18 +42,18 @@ I created two baseline models for this fingerprinting task:
     \item A 1D-CNN with a transformer encoder \parencite{hong_holmes_2020}. See the Appendix Figure \ref{fig:1d_cnn} for an architecture diagram of the 1D-CNN.
 \end{enumerate}
 
-Both models were designed to directly use the 1-second long snippets of the interictal recordings. This data representation was originally inspired by \cite{koffman_fingerprinting_2023}, which used accelerometer data from a wrist sensor and a lag-based feature extractor to fingerprint individuals from their gait. This work converted the time series into an image, but did not use the image in the model; instead, they converted the image back into a tabular format.
+Both models were designed to directly use the 1-second long snippets of the interictal recordings. This data representation was originally inspired by \textcite{koffman_fingerprinting_2023}, which used accelerometer data from a wrist sensor and a lag-based feature extractor to fingerprint individuals from their gait. This work converted the time series into an image, but did not use the image in the model; instead, they converted the image back into a tabular format.
 
 \subsection{Results}
 
 
 \section{Proposed Model}
 \subsection{Data Representation}
-In my first iteration, I trained models on the raw time series, which was feasible even without using RNNs or LSTMs since the time windows were short. Inspired by \cite{koffman_fingerprinting_2023}, \cite{wang_encoding_2015}, and \cite{yang_sensor_2019}, I wanted to convert the time series into image representations.
+In my first iteration, I trained models on the raw time series, which was feasible even without using RNNs or LSTMs since the time windows were short. Inspired by \textcite{koffman_fingerprinting_2023}, \textcite{wang_encoding_2015}, and \textcite{yang_sensor_2019}, I wanted to convert the time series into image representations.
 I did this in two ways: (1) a two-channel time $\times$ time image where the first channel is the Gramian Angular
 Summation Field (GASF) of the window (rescaled to [-1, 1]), and the second channel is the Markov Transition
 Field (MTF) computed with 8 quantile bins. Both are reduced to 64 $\times$ 64. Pixel (i, j) relates time steps i and j;
-(2) a three-channel amplitude $\times$ amplitude image with one channel per lag (2, 8, and 32 samples, about 8, 31, and 125 ms). Each 16 $\times$ 16 channel is a histogram of (x(t - lag), x(t)) pairs within the window, using 16 equal-width amplitude bins spanning $\pm$4 standard deviations. Cell values are log-scaled counts, $\frac{log(1 + count)}{log(1 + 256)}$.
+(2) a three-channel amplitude $\times$ amplitude image with one channel per lag (2, 8, and 32 samples, about 8, 31, and 125 ms). Each 16 $\times$ 16 channel is a histogram of (x(t - lag), x(t)) pairs within the window, using 16 equal-width amplitude bins spanning $\pm$4 standard deviations. Cell values are log-scaled counts, $\frac{log(1 + count)}{log(1 + 256)}$. See \textcite{wang_encoding_2015} for a detailed description of the GASF and MTF (images were computed using \texttt{pyts} \parencite{faouzi_pyts_2020}); see \textcite{koffman_fingerprinting_2023} for more detail on the lag grids.
 
 \subsection{Model Architecture}
 My proposed model starts with two parallel CNNs, one branch for the two-channel GASF and MTF image, and one branch for the three-channel lag grid image. After a convolution and average pooling, the results maps are flattened and then concatenated before being passed to a MLP head with two hidden layers to make the final prediction. Given the parallel CNN branches of this model, it will be referred to as \texttt{TwoBranch}. See Appendix Figure \ref{fig:twobranch} for an architecture diagram.
@@ -93,7 +93,7 @@ To test these hypotheses, I trained and evaluated the \texttt{TwoBranch} model a
 
 Table \ref{tab:results} shows the accuracy results for the main model and the ablation results. Across all subjects and both the Run 1 Test windows and the Run 2 windows, all models do much better than chance. Out of the image models, \texttt{TwoBranch} model has the highest accuracy to all subjects and recordings, except for subject HUP117, where \texttt{GridOnly} is 0.1 percentage points better. In general, the \texttt{GridOnly} model is only slightly worse than the \texttt{TwoBranch}, which indicates that most of the information is coming from the lag grid images, and only some additionally useful information is coming from the GASF/MTF images. However, the original CNN that used the raw 1-second windows greatly outperforms the image-based models, and the original MLP is also only slightly worse than the \texttt{TwoBranch} model.
 
-
+The differences between \texttt{GridOnly} and \texttt{TSOnly} is primarily that the lag-based grids directly use amplitude, while the GASF and MTF do not see absolute amplitude or the amplitude distribution. This is a potential limitation or confounder, and applying difference normalization techniques could change the results.
 
 Overall, representing the time series as images did not improve predictions compared to feeding the time series directly into a 1D-CNN. Future experiments could include using deeper CNNs when working with images and using longer time windows (for both images and raw time series).
 
