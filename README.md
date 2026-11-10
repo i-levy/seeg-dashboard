@@ -29,7 +29,7 @@ streamlit run Home_Page.py
 
 ## Other notes
 * The reference was not documented, and there is no evidence for common average referencing (CAR) or bipolar reference, so I am applying CAR as preprocessing step. Additionally, I am applying a low-pass filter at 1 Hz, and a notch filter at 60 Hz (and harmonics) for power line noise.
-* The basic setup of the simple CNN I used comes from a [GitHub repository](https://github.com/hsd1503/resnet1d/blob/master/cnn1d.py) by Shenda Hong, with some modifications, such as decreaseing the original dropout percentage from 0.5 to 0.1.
+* The basic setup of the simple CNN I used comes from a [GitHub repository](https://github.com/hsd1503/resnet1d/blob/master/cnn1d.py) by Shenda Hong, with some modifications, such as decreasing the original dropout percentage from 0.5 to 0.1.
 * Code to build all models can be found in `utils/`:
      * `seeg_fingerprinting.py` and `hw2_model_training.ipynb` contain models and training code for "Basic MLP vs CNN"
      * `seeg_fingerprinting_hw3.py` and `hw3_model_training.ipynb` contain models and training code for "Time Series to Images"
